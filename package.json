@@ -6,16 +6,67 @@
   "engines": {
     "vscode": "^1.98.0"
   },
+  "repository": {
+    "url": "https://github.com/Hyiker/dystopia"
+  },
   "categories": [
     "Other"
+  ],
+  "files": [
+    "media/**"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
+    "customEditors": [
       {
-        "command": "dystopia.helloWorld",
-        "title": "Hello World"
+        "viewType": "imagePreview.preview",
+        "displayName": "Image preview",
+        "selector": [
+          {
+            "filenamePattern": "*.exr"
+          },
+          {
+            "filenamePattern": "*.hdr"
+          },
+          {
+            "filenamePattern": "*.pfm"
+          },
+          {
+            "filenamePattern": "*.uhdr"
+          },
+          {
+            "filenamePattern": "*.png"
+          },
+          {
+            "filenamePattern": "*.jpg"
+          },
+          {
+            "filenamePattern": "*.jpeg"
+          },
+          {
+            "filenamePattern": "*.tga"
+          },
+          {
+            "filenamePattern": "*.bmp"
+          },
+          {
+            "filenamePattern": "*.gif"
+          },
+          {
+            "filenamePattern": "*.ppm"
+          },
+          {
+            "filenamePattern": "*.pgm"
+          },
+          {
+            "filenamePattern": "*.pnm"
+          },
+          {
+            "filenamePattern": "*.psd"
+          }
+        ],
+        "priority": "default"
       }
     ]
   },
