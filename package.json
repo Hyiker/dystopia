@@ -2,10 +2,12 @@
   "name": "dystopia",
   "displayName": "Dystopia",
   "description": "VScode HDR image viewer",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "icon": "images/dystopia.png",
   "engines": {
-    "vscode": "^1.98.0"
+    "vscode": "^1.90.0"
   },
+  "publisher": "CarbeneHu",
   "repository": {
     "url": "https://github.com/Hyiker/dystopia"
   },
@@ -82,7 +84,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.98.0",
+    "@types/vscode": "^1.90.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
