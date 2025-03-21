@@ -6,7 +6,12 @@ Dystopia is an alternative to [VERIV](https://github.com/mcrescas/veriv) for pre
 
 <p align="center" style="color:grey">Staircase rendered image by Benedikt Bitterli</p>
 
-This extension utilize [HDRView](https://github.com/wkjarosz/hdrview) wasm build as the image viewer, I simply port it to VSCode. Theoretically, Dystopia support all functionalities of HDRView.
+This extension utilize [HDRView](https://github.com/wkjarosz/hdrview) wasm build as the image viewer, minor [modifications](https://github.com/Hyiker/hdrview/tree/dystopia) were made for this VSCode port. Theoretically, Dystopia support all functionalities of HDRView.
+
+## Additional features
+
+- Right click a image `Dystopia: Add to viewer` with existing preview panel to add a image to existing panel.
+- Show metrics(L1, L2, MSE, PSNR, ...) between two images.
 
 ## Usage
 

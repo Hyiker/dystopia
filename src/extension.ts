@@ -4,6 +4,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// assert that only one preview panel is allowed.
+let activeImagePreviewPanel: vscode.WebviewPanel | undefined;
+
 export function activate(context: vscode.ExtensionContext) {
   const provider = new ImagePreviewProvider(context.extensionUri);
 
@@ -19,6 +22,22 @@ export function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+  const addToViewerCommand = vscode.commands.registerCommand('dystopia.addToViewer', (resource) => {
+    if (resource && resource.fsPath) {
+      if (activeImagePreviewPanel) {
+        console.log(`Selected file path: ${resource.fsPath}`);
+
+        activeImagePreviewPanel.webview.postMessage({
+          command: 'addToViewer',
+          fileUri: activeImagePreviewPanel.webview.asWebviewUri(vscode.Uri.file(resource.fsPath)).toString()
+        });
+      } else {
+        vscode.window.showWarningMessage('Please open an image file in the custom editor first');
+      }
+    }
+  });
+
+  context.subscriptions.push(addToViewerCommand);
 }
 
 class ImagePreviewProvider implements vscode.CustomReadonlyEditorProvider {
@@ -34,13 +53,19 @@ class ImagePreviewProvider implements vscode.CustomReadonlyEditorProvider {
     return { uri, dispose: () => { } };
   }
 
-
-
   async resolveCustomEditor(
     document: vscode.CustomDocument,
     webviewPanel: vscode.WebviewPanel,
     token: vscode.CancellationToken
   ): Promise<void> {
+    activeImagePreviewPanel = webviewPanel;
+
+    webviewPanel.onDidDispose(() => {
+      if (activeImagePreviewPanel === webviewPanel) {
+        activeImagePreviewPanel = undefined;
+      }
+    });
+
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [
@@ -50,6 +75,18 @@ class ImagePreviewProvider implements vscode.CustomReadonlyEditorProvider {
     };
 
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document.uri);
+
+    webviewPanel.webview.onDidReceiveMessage(
+      message => {
+        switch (message.command) {
+          case 'log':
+            console.log(message.text);
+            return;
+        }
+      },
+      undefined,
+      []
+    );
   }
   private getHtmlForWebview(webview: vscode.Webview, imageUri: vscode.Uri): string {
     const imageWebviewUri = webview.asWebviewUri(imageUri);
@@ -85,6 +122,28 @@ class ImagePreviewProvider implements vscode.CustomReadonlyEditorProvider {
 
         Module.arguments = "--url ${imageWebviewUri.toString()}";
 
+        const vscode = acquireVsCodeApi();
+        function logToConsole(text) {
+          vscode.postMessage({
+            command: 'log',
+            text: text
+          });
+        }
+
+        window.addEventListener('message', event => {
+          const message = event.data;
+          switch (message.command) {
+            case 'addToViewer':{
+              Module.ccall('hdrview_loadurl',  // C function name
+                                    'void',
+                                    ['string'],  // url
+                                    [message.fileUri]);
+              logToConsole(\`Adding file to viewer: \${message.fileUri}\`);
+              break;
+            }
+          }
+        });
+
         (function() {
           const originalFetch = window.fetch;
           window.fetch = function(input, init) {
@@ -116,8 +175,8 @@ class ImagePreviewProvider implements vscode.CustomReadonlyEditorProvider {
     htmlContent = htmlContent.replace('</head>', `${moduleScript}</head>`);
 
     resourceFiles.forEach(file => {
-      const regex = new RegExp(`(src|href)="${file}([^"]+)"`, 'g');
-      htmlContent = htmlContent.replace(regex, `$1="${resourceUris[file]}$2"`);
+      const regex = new RegExp(`(src|href)=${file}`, 'g');
+      htmlContent = htmlContent.replace(regex, `$1="${resourceUris[file]}"`);
     });
 
     return htmlContent;
@@ -126,4 +185,6 @@ class ImagePreviewProvider implements vscode.CustomReadonlyEditorProvider {
 
 
 // This method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {
+  activeImagePreviewPanel = undefined;
+}
